@@ -5,41 +5,23 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 )
 
 var (
-	stream = flag.String("stream", "your-stream", "your stream name")
-	region = flag.String("region", "ap-northeast-1", "your AWS region")
+	stream = flag.String("stream", "tet", "tet")
+	region = flag.String("region", "us-west-1", "us-west-1")
 )
 
 func PutRecord() {
 	flag.Parse()
 
-	s := session.New(&aws.Config{Region: aws.String(*region)})
+	s := session.New(&aws.Config{Region: aws.String(*region), Credentials: credentials.NewStaticCredentials("", "", "")})
 	kc := kinesis.New(s)
 
 	streamName := aws.String(*stream)
-
-	out, err := kc.CreateStream(&kinesis.CreateStreamInput{
-		ShardCount: aws.Int64(1),
-		StreamName: streamName,
-	})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%v\n", out)
-
-	if err := kc.WaitUntilStreamExists(&kinesis.DescribeStreamInput{StreamName: streamName}); err != nil {
-		panic(err)
-	}
-
-	streams, err := kc.DescribeStream(&kinesis.DescribeStreamInput{StreamName: streamName})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%v\n", streams)
 
 	putOutput, err := kc.PutRecord(&kinesis.PutRecordInput{
 		Data:         []byte("hoge"),
@@ -102,12 +84,4 @@ func PutRecord() {
 	}
 	fmt.Printf("%v\n", recordsSecond)
 
-	// OK, finally delete your stream
-	deleteOutput, err := kc.DeleteStream(&kinesis.DeleteStreamInput{
-		StreamName: streamName,
-	})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%v\n", deleteOutput)
 }
