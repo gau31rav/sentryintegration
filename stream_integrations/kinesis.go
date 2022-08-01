@@ -1,6 +1,7 @@
 package stream_integrations
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 
@@ -22,22 +23,27 @@ func PutRecord() {
 	kc := kinesis.New(s)
 
 	streamName := aws.String(*stream)
+	v := make(map[string]string)
+	v["service"] = "Order"
+	v["Time"] = "12:00:23T 05"
+
+	vJson, _ := json.Marshal(v)
 
 	putOutput, err := kc.PutRecord(&kinesis.PutRecordInput{
-		Data:         []byte("hoge"),
+		Data:         []byte(vJson),
 		StreamName:   streamName,
 		PartitionKey: aws.String("key1"),
 	})
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v\n", putOutput)
+	fmt.Printf("Put To Kinesis")
 
 	// put 10 records using PutRecords API
-	entries := make([]*kinesis.PutRecordsRequestEntry, 10)
+	entries := make([]*kinesis.PutRecordsRequestEntry, 100)
 	for i := 0; i < len(entries); i++ {
 		entries[i] = &kinesis.PutRecordsRequestEntry{
-			Data:         []byte(fmt.Sprintf("hoge%d", i)),
+			Data:         []byte(vJson),
 			PartitionKey: aws.String("key2"),
 		}
 	}
@@ -64,7 +70,7 @@ func PutRecord() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v\n", iteratorOutput)
+	// fmt.Printf("%v\n", iteratorOutput)
 
 	// get records use shard iterator for making request
 	records, err := kc.GetRecords(&kinesis.GetRecordsInput{

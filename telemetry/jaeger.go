@@ -59,7 +59,7 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 	return tp, nil
 }
 
-func TraceLocal() {
+func InitJaeger() {
 	tp, err := tracerProvider("http://localhost:14268/api/traces")
 	if err != nil {
 		log.Fatal(err)
@@ -90,12 +90,12 @@ func TraceLocal() {
 	bar(ctx)
 }
 
-func bar(ctx context.Context) {
-	// Use the global TracerProvider.
-	tr := otel.Tracer("component-bar")
-	_, span := tr.Start(ctx, "bar")
-	span.SetAttributes(attribute.Key("testset").String("value"))
-	defer span.End()
+// func bar(ctx context.Context) {
+// 	// Use the global TracerProvider.
+// 	tr := otel.Tracer("component-bar")
+// 	_, span := tr.Start(ctx, "bar")
+// 	span.SetAttributes(attribute.Key("testset").String("value"))
+// 	defer span.End()
 
-	// Do bar...
-}
+// 	// Do bar...
+// }
